@@ -1,5 +1,6 @@
-name: Warmup Gradle for Offline Build
+name: Warmup Gradle & Pub Cache for Offline Build
 
+# فقط وقتی دستی اجرا کنیم
 on:
   workflow_dispatch:
 
@@ -8,20 +9,25 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      # Cache Gradle داخل پروژه برای artifact
       GRADLE_USER_HOME: ${{ github.workspace }}/.gradle
 
     steps:
+      # Checkout پروژه
       - name: Checkout
         uses: actions/checkout@v4
 
+      # نصب Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.38.9'   # 👈 نسخه خودت رو بذار
+          flutter-version: '3.38.9'
 
+      # دانلود Pub dependencies
       - name: Flutter Pub Get
         run: flutter pub get
 
+      # دانلود Gradle dependencies (Debug + Release)
       - name: Warmup Gradle
         run: |
           cd android
@@ -29,12 +35,15 @@ jobs:
           ./gradlew assembleDebug --no-daemon --refresh-dependencies
           ./gradlew assembleRelease --no-daemon
 
+      # Zip کردن Gradle cache
       - name: Zip Gradle Cache
         run: zip -r gradle-cache.zip .gradle
 
+      # Zip کردن Pub cache
       - name: Zip Pub Cache
         run: zip -r pub-cache.zip ~/.pub-cache
 
+      # Upload Artifact برای دانلود
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
