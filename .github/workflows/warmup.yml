@@ -1,0 +1,44 @@
+name: Warmup Gradle for Offline Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  warmup:
+    runs-on: ubuntu-latest
+
+    env:
+      GRADLE_USER_HOME: ${{ github.workspace }}/.gradle
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.9'   # 👈 نسخه خودت رو بذار
+
+      - name: Flutter Pub Get
+        run: flutter pub get
+
+      - name: Warmup Gradle
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --refresh-dependencies
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Zip Gradle Cache
+        run: zip -r gradle-cache.zip .gradle
+
+      - name: Zip Pub Cache
+        run: zip -r pub-cache.zip ~/.pub-cache
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: offline-caches
+          path: |
+            gradle-cache.zip
+            pub-cache.zip
