@@ -1,6 +1,5 @@
 name: Warmup Gradle & Pub Cache for Offline Build
 
-# فقط وقتی دستی اجرا کنیم
 on:
   workflow_dispatch:
 
@@ -9,12 +8,11 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      # Cache Gradle داخل پروژه برای artifact
       GRADLE_USER_HOME: ${{ github.workspace }}/.gradle
 
     steps:
       # Checkout پروژه
-      - name: Checkout
+      - name: Checkout project
         uses: actions/checkout@v4
 
       # نصب Flutter
@@ -26,6 +24,15 @@ jobs:
       # دانلود Pub dependencies
       - name: Flutter Pub Get
         run: flutter pub get
+
+      # Debug مسیرها و فایل‌ها
+      - name: Debug paths
+        run: |
+          echo "Root dir: $(pwd)"
+          ls -la
+          cd android
+          echo "Android dir: $(pwd)"
+          ls -la
 
       # دانلود Gradle dependencies (Debug + Release)
       - name: Warmup Gradle
